@@ -8,6 +8,7 @@ import inquirer from 'inquirer';
 import { ProjectService } from './project/service/project.service';
 import { TdService } from './td/service/td.service';
 import { BdService } from './bd/service/bd.service';
+import { AriService } from './project/service/ari.service';
 import figlet from 'figlet';
 interface AssistantToken {
   openaiAPIKey: string;
@@ -34,6 +35,7 @@ export class AppService {
     private readonly projectService: ProjectService,
     private readonly tdService: TdService,
     private readonly bdService: BdService,
+    private readonly ariService: AriService,
   ) {}
 
   async loadAssistantToken(): Promise<void> {
@@ -105,7 +107,7 @@ export class AppService {
     await this.loadAssistantToken();
     const selectedProjectId = await this.projectService.projectSelector();
     const selectedPipeline = await inquirer.prompt<{
-      pipeline: 'bd' | 'td';
+      pipeline: 'bd' | 'td' | 'ari';
     }>([
       {
         type: 'list',
@@ -114,6 +116,7 @@ export class AppService {
         choices: [
           { name: 'Business Development', value: 'bd' },
           { name: 'Technology Development', value: 'td' },
+          { name: 'Copilot Research Wizard', value: 'ari' },
         ],
       },
     ]);
@@ -123,6 +126,9 @@ export class AppService {
     }
     if (pipeline === 'bd' && selectedProjectId) {
       await this.bdService.bdPipeline(selectedProjectId);
+    }
+    if (pipeline === 'ari' && selectedProjectId) {
+      await this.ariService.startConversation(selectedProjectId);
     }
   }
 }
