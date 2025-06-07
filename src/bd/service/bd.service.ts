@@ -1701,4 +1701,43 @@ export class BdService {
 
     await new Promise((resolve) => setTimeout(resolve, 3000));
   }
+
+  async getBusinessPromptContent(projectId: string): Promise<string> {
+    const business = await this.businessRepository.findOne({
+      where: { id: projectId },
+      relations: [
+        'project',
+        'businessPersona',
+        'project.targetMarket',
+        'project.targetMarket.selectedMarketSegment',
+      ],
+    });
+
+    if (!business) {
+      throw new Error('Business not found for the given project ID.');
+    }
+
+    return `
+      Project Title: ${business.project.title}
+      Project Methodology: ${business.project.methodology}
+      Project Planetary Impact: ${business.project.impact}
+      Business Persona Name: ${business.businessPersona.name}
+      Business Persona Occupation: ${business.businessPersona.occupation}
+      Business Persona Gender: ${business.businessPersona.gender}
+      Business Persona Marital Status: ${business.businessPersona.maritalStatus}
+      Business Persona Key Traits: ${business.businessPersona.keyTraits.join(', ')}
+      Business Persona Personality Type: ${business.businessPersona.personalityType}
+      Business Persona Purchase Drivers: ${business.businessPersona.purchaseDrivers.join(', ')}
+      Business Persona Preferred Brands: ${business.businessPersona.preferredBrands.join(', ')}
+      Business Persona Biography: ${business.businessPersona.biography}
+      Business Persona Pain Points: ${business.businessPersona.painPoints.join(', ')}
+      Business Persona Community Touchpoints: ${business.businessPersona.communityTouchpoints.join(', ')}
+      Business Persona Purchase Frequency: ${business.businessPersona.purchaseFrequency.interval} ${business.businessPersona.purchaseFrequency.period}
+    Target Market Name: ${business.selectedTargetMarketId ? business.selectedTargetMarket.name : 'N/A'}
+    Target Market Description: ${business.selectedTargetMarketId ? business.selectedTargetMarket.description : 'N/A'}
+    Market Segment Title: ${business.selectedTargetMarketId && business.selectedTargetMarket.selectedMarketSegmentId ? business.selectedTargetMarket.selectedMarketSegment.title : 'N/A'}
+    Market Segment Description: ${business.selectedTargetMarketId && business.selectedTargetMarket.selectedMarketSegmentId ? business.selectedTargetMarket.selectedMarketSegment.description : 'N/A'}
+
+`;
+  }
 }
